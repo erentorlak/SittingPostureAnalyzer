@@ -1,5 +1,6 @@
 #%%
-#%pip install mediapipe 
+%pip install mediapipe --user
+
 
 #%%
 import cv2
@@ -199,7 +200,11 @@ import csv
 mp_pose = mp.solutions.pose
 pose = mp_pose.Pose(static_image_mode=False, min_detection_confidence=0.5, model_complexity=1)
 mp_drawing = mp.solutions.drawing_utils
-
+def calculate_distance(a, b):
+    a = np.array(a)
+    b = np.array(b)
+    
+    return np.linalg.norm(a - b)
 # Function to calculate angle between three points
 def calculate_angle(a, b, c):
     a = np.array(a)  # First
@@ -242,32 +247,46 @@ while cap.isOpened():
     # Display the frame.
     cv2.imshow('MediaPipe Pose', frame)
 
-    if cv2.waitKey(2) & 0xFF == ord('c') and results.pose_landmarks:
+    if cv2.waitKey(1) & 0xFF == ord('c') and results.pose_landmarks:
         landmarks = results.pose_landmarks.landmark
         
-        # Define the points for angle calculation
         right_ear = [landmarks[mp_pose.PoseLandmark.RIGHT_EAR.value].x, landmarks[mp_pose.PoseLandmark.RIGHT_EAR.value].y]
         right_eye_outer = [landmarks[mp_pose.PoseLandmark.RIGHT_EYE_OUTER.value].x, landmarks[mp_pose.PoseLandmark.RIGHT_EYE_OUTER.value].y]
         right_eye = [landmarks[mp_pose.PoseLandmark.RIGHT_EYE.value].x, landmarks[mp_pose.PoseLandmark.RIGHT_EYE.value].y]
-        
+
         left_eye = [landmarks[mp_pose.PoseLandmark.LEFT_EYE.value].x, landmarks[mp_pose.PoseLandmark.LEFT_EYE.value].y]
         left_eye_outer = [landmarks[mp_pose.PoseLandmark.LEFT_EYE_OUTER.value].x, landmarks[mp_pose.PoseLandmark.LEFT_EYE_OUTER.value].y]
         left_ear = [landmarks[mp_pose.PoseLandmark.LEFT_EAR.value].x, landmarks[mp_pose.PoseLandmark.LEFT_EAR.value].y]
-        
+
+        mouth_left = [landmarks[mp_pose.PoseLandmark.MOUTH_LEFT.value].x, landmarks[mp_pose.PoseLandmark.MOUTH_LEFT.value].y]
+        mouth_right = [landmarks[mp_pose.PoseLandmark.MOUTH_RIGHT.value].x, landmarks[mp_pose.PoseLandmark.MOUTH_RIGHT.value].y]
+
+        mid_mouth = [(mouth_left[0] + mouth_right[0]) / 2, (mouth_left[1] + mouth_right[1]) / 2]
+
+        left_shoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x, landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
+        right_shoulder = [landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].x, landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].y]
+
+        mid_shoulder = [(left_shoulder[0] + right_shoulder[0]) / 2, (left_shoulder[1] + right_shoulder[1]) / 2]
+
+        diff_mouth_shoulder = calculate_distance(mid_shoulder, mid_mouth)
+
+        diff_leye_reye = calculate_distance(left_eye, right_eye)
+
+        diff_leare_reare = calculate_distance(left_ear, right_ear)
+
         # Calculate the angles
-        angle1 = calculate_angle(right_ear, right_eye_outer, right_eye)
-        angle2 = calculate_angle(left_eye, left_eye_outer, left_ear)
-        
-        #angle = (angle1 + angle2) / 2
+        eye_angle_left = calculate_angle(right_ear, right_eye_outer, right_eye)
+        eye_angle_right = calculate_angle(left_eye, left_eye_outer, left_ear)
 
-        angles_data.append([angle1, angle2])
-        print(f"Captured angles: Angle1: {angle1}, Angle2: {angle2}")
+        # Append the features to the list
+        angles_data.append([eye_angle_left, eye_angle_right, diff_mouth_shoulder, diff_leye_reye, diff_leare_reare])
 
-    elif cv2.waitKey(2) & 0xFF == ord('q'):
+        print(f"Captured angles: Angle1: {eye_angle_left}, Angle2: {eye_angle_right}")
+    elif cv2.waitKey(1) & 0xFF == ord('q'):
         # Save data to CSV file when quitting
         with open(data_file, mode='w', newline='') as file:
             writer = csv.writer(file)
-            writer.writerow(["Angle1", "Angle2"])  # Header
+            writer.writerow(["Angle1", "Angle2", "DiffMouthShoulder", "DiffLEyeREye", "DiffLEarREar"])
             writer.writerows(angles_data)
         print(f"Data saved to {data_file}")
         break
@@ -281,6 +300,7 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import joblib
+
 
 # Load the trained Random Forest model
 model = joblib.load('posture_model.pkl')
@@ -308,9 +328,6 @@ def calculate_distance(a, b):
     b = np.array(b)
     
     return np.linalg.norm(a - b)
-
-
-
 
 # Function to preprocess frame and extract features
 def extract_features(landmarks):
@@ -358,7 +375,7 @@ while cap.isOpened():
     
     # Check if any poses are detected
     if results.pose_landmarks:
-        # Extract features from the current frame
+        # Extract features from the current frame"
         features = extract_features(results.pose_landmarks.landmark)
         
         # Use the trained model to predict the posture class
@@ -380,3 +397,146 @@ cap.release()
 cv2.destroyAllWindows()
 
 # %%
+import cv2
+import mediapipe as mp
+import numpy as np
+import joblib
+
+class PostureClassifier:
+    def __init__(self, model_path):
+        self.model = joblib.load(model_path)
+        self.pose = mp.solutions.pose.Pose(static_image_mode=False, min_detection_confidence=0.5, model_complexity=1)
+        self.mp_drawing = mp.solutions.drawing_utils
+
+    @staticmethod
+    def calculate_angle(a, b, c):
+        a, b, c = np.array(a), np.array(b), np.array(c)
+        radians = np.arctan2(c[1] - b[1], c[0] - b[0]) - np.arctan2(a[1] - b[1], a[0] - b[0])
+        angle = np.abs(radians * 180.0 / np.pi)
+        return 360 - angle if angle > 180.0 else angle
+
+    @staticmethod
+    def calculate_distance(a, b):
+        return np.linalg.norm(np.array(a) - np.array(b))
+
+    def extract_features(self, landmarks):
+        # Extract relevant landmarks for feature calculation
+        features = []
+        for side in ['RIGHT', 'LEFT']:
+            ear = landmarks[getattr(mp.solutions.pose.PoseLandmark, f'{side}_EAR').value]
+            eye_outer = landmarks[getattr(mp.solutions.pose.PoseLandmark, f'{side}_EYE_OUTER').value]
+            eye = landmarks[getattr(mp.solutions.pose.PoseLandmark, f'{side}_EYE').value]
+            angle = self.calculate_angle([ear.x, ear.y], [eye_outer.x, eye_outer.y], [eye.x, eye.y])
+            features.append(angle)
+        return np.array([features])
+
+    def classify_posture(self, frame):
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        results = self.pose.process(frame_rgb)
+        if results.pose_landmarks:
+            features = self.extract_features(results.pose_landmarks.landmark)
+            prediction = self.model.predict(features)
+            label = 'Good Posture' if prediction[0] == 1 else 'Bad Posture'
+            cv2.putText(frame, label, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+        return frame
+
+def main():
+    classifier = PostureClassifier('posture_model.pkl')
+    cap = cv2.VideoCapture(0)
+
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            print("Ignoring empty camera frame.")
+            continue
+
+        frame = classifier.classify_posture(frame)
+        cv2.imshow('MediaPipe Pose with Posture Classification', frame)
+
+        if cv2.waitKey(5) & 0xFF == ord('q'):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+if __name__ == "__main__":
+    main()
+
+# %%
+import cv2
+import mediapipe as mp
+import numpy as np
+import joblib
+
+class PostureClassifier:
+    def __init__(self, model_path):
+        self.model = joblib.load(model_path)
+        self.pose = mp.solutions.pose.Pose(static_image_mode=False, min_detection_confidence=0.5, model_complexity=1)
+        self.mp_drawing = mp.solutions.drawing_utils
+
+    @staticmethod
+    def calculate_angle(a, b, c):
+        a, b, c = np.array(a), np.array(b), np.array(c)
+        radians = np.arctan2(c[1] - b[1], c[0] - b[0]) - np.arctan2(a[1] - b[1], a[0] - b[0])
+        angle = np.abs(radians * 180.0 / np.pi)
+        return 360 - angle if angle > 180.0 else angle
+
+    @staticmethod
+    def calculate_distance(a, b):
+        return np.linalg.norm(np.array(a) - np.array(b))
+
+    def extract_features(self, landmarks):
+        # Extract relevant landmarks for feature calculation
+        features = []
+        for side in ['RIGHT', 'LEFT']:
+            ear = landmarks[getattr(mp.solutions.pose.PoseLandmark, f'{side}_EAR').value]
+            eye_outer = landmarks[getattr(mp.solutions.pose.PoseLandmark, f'{side}_EYE_OUTER').value]
+            eye = landmarks[getattr(mp.solutions.pose.PoseLandmark, f'{side}_EYE').value]
+            angle = self.calculate_angle([ear.x, ear.y], [eye_outer.x, eye_outer.y], [eye.x, eye.y])
+            features.append(angle)
+        
+        # Additional features: distance between mid mouth and mid shoulder
+        mouth_left = landmarks[mp.solutions.pose.PoseLandmark.MOUTH_LEFT.value]
+        mouth_right = landmarks[mp.solutions.pose.PoseLandmark.MOUTH_RIGHT.value]
+        mid_mouth = [(mouth_left.x + mouth_right.x) / 2, (mouth_left.y + mouth_right.y) / 2]
+        
+        left_shoulder = landmarks[mp.solutions.pose.PoseLandmark.LEFT_SHOULDER.value]
+        right_shoulder = landmarks[mp.solutions.pose.PoseLandmark.RIGHT_SHOULDER.value]
+        mid_shoulder = [(left_shoulder.x + right_shoulder.x) / 2, (left_shoulder.y + right_shoulder.y) / 2]
+        
+        diff_mouth_shoulder = self.calculate_distance(mid_mouth, mid_shoulder)
+        features.append(diff_mouth_shoulder)
+        
+        return np.array([features])
+
+    def classify_posture(self, frame):
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        results = self.pose.process(frame_rgb)
+        if results.pose_landmarks:
+            features = self.extract_features(results.pose_landmarks.landmark)
+            prediction = self.model.predict(features)
+            label = 'Good Posture' if prediction[0] == 1 else 'Bad Posture'
+            cv2.putText(frame, label, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+        return frame
+
+def main():
+    classifier = PostureClassifier('posture_model.pkl')
+    cap = cv2.VideoCapture(0)
+
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            print("Ignoring empty camera frame.")
+            continue
+
+        frame = classifier.classify_posture(frame)
+        cv2.imshow('MediaPipe Pose with Posture Classification', frame)
+
+        if cv2.waitKey(5) & 0xFF == ord('q'):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+if __name__ == "__main__":
+    main()
