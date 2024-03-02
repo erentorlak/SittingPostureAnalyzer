@@ -6,9 +6,11 @@ You can use it to monitor your posture while working at a desk, exercising, or p
 
 If you want to train the model on your own data, you can use the GUI to tag and save instances of good and bad postures. Then, you can train the model using the collected data.
 
-<img src="train_tag_gui.png" alt="Train Tag GUI" width="300"/>
+<div style="display: flex;">
+    <img src="train_tag_gui.png" alt="Train Tag GUI" style="flex: 1; width: auto; height: 300px; margin-right: 10px;">
+    <img src="appgif.gif" alt="Posture Classification App" style="flex: 1; width: auto; height: 300px;">
+</div>
 
-![App](appgif.gif "Posture Classification App")
 
 ## Installation
 
