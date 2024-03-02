@@ -2,6 +2,10 @@
 
 This project implements a posture classification system that detects a person's posture through a webcam feed and classifies it as either "good" or "bad" based on the positioning of various body parts. The system uses MediaPipe for real-time pose detection and a RandomForestClassifier for posture classification. It also includes a GUI for data collection and a training script for the machine learning model.
 
+You can use it to monitor your posture while working at a desk, exercising, or performing any other activity where maintaining good posture is important.
+
+If you want to train the model on your own data, you can use the GUI to tag and save instances of good and bad postures. Then, you can train the model using the collected data.
+
 ## Installation
 
 First, ensure you have Python installed on your system. Then, clone this repository and navigate to the project directory. Install the required dependencies with:
