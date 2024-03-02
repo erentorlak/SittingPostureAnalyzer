@@ -46,7 +46,7 @@ Run the classifier with:
 python app.py
 ```
 
-### Posture Detector with GUI
+### Posture Tagging with GUI
 
 This GUI application allows users to tag and save instances of good and bad postures to collect data for training.
 
