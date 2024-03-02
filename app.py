@@ -43,6 +43,10 @@ class PostureClassifier:
             self.calculate_distance(mid_shoulder, mid_mouth),               # Distance mouth to shoulder
             self.calculate_distance(left_eye, right_eye),                   # Distance left eye to right eye
             self.calculate_distance(left_ear, right_ear)                    # Distance left ear to right ear
+
+            # TODO: you can add more features here for generalization 
+
+            #,"Ratio":( distance_leye_reye + distance_leare_reare/2) / distance_mouth_shoulder
         ]
         return features
     

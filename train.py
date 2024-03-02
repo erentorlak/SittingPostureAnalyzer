@@ -50,7 +50,7 @@ class PostureModel:
         self.visualize_tree()
 
 if __name__ == "__main__":
-    model = PostureModel('goodPosture.csv', 'badPosture.csv', 'posture_model.pkl')
+    model = PostureModel('csv_files/goodPosture.csv', 'csv_files/badPosture.csv', 'posture_model.joblib')
     model.run()
 
 # %%

@@ -42,8 +42,8 @@ class PostureDetector:
         self.cap = cv2.VideoCapture(0)
 
         # CSV file setup
-        self.good_posture_file = 'goodPosture.csv'
-        self.bad_posture_file = 'badPosture.csv'
+        self.good_posture_file = 'csv_files/goodPosture.csv'
+        self.bad_posture_file = 'csv_files/badPosture.csv'
 
     def setup_gui(self):
         """
@@ -174,6 +174,10 @@ class PostureDetector:
            "Distance Mouth to Shoulder": distance_mouth_shoulder,
            "Distance Left Eye to Right Eye": distance_leye_reye,
            "Distance Left Ear to Right Ear": distance_leare_reare
+        
+            # TODO: you can add more features here for generalization 
+
+            #,"Ratio":( distance_leye_reye + distance_leare_reare/2) / distance_mouth_shoulder
        }
 
     @staticmethod
