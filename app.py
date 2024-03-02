@@ -63,7 +63,7 @@ class PostureClassifier:
             prediction = self.model.predict(feature_df)
             label = 'Good Posture' if prediction[0] == 1 else 'Bad Posture'
             color = (0, 255, 0) if label == 'Good Posture' else (0, 0, 255)
-            cv2.putText(frame, label, (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2, cv2.LINE_AA)
+            cv2.putText(frame, label, (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2, cv2.LINE_AA) 
 
         return frame
 
