@@ -8,6 +8,7 @@ If you want to train the model on your own data, you can use the GUI to tag and 
 
 <img src="train_tag_gui.png" alt="Train Tag GUI" width="300"/>
 
+<img src="appgif.gif" alt="Posture Classification" width="300"
 
 ## Installation
 
