@@ -1,0 +1,7 @@
+numpy
+pandas
+opencv-python
+mediapipe   # use --user to install
+joblib
+scikit-learn
+Pillow
