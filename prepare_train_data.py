@@ -52,9 +52,10 @@ class PostureDetector:
         self.video_label = Label(self.master)
         self.video_label.pack()
 
-        Button(self.master, text="Good Posture", command=lambda: self.save_posture('good')).pack(side='left')
-        Button(self.master, text="Bad Posture", command=lambda: self.save_posture('bad')).pack(side='right')
-        Button(self.master, text="Quit", command=self.cleanup_and_close).pack(side='bottom')
+        Button(self.master, text="Good Posture", height=5, width=30, bg='light green', command=lambda: self.save_posture('good')).pack(side='left')
+        Button(self.master, text="Bad Posture", height=5, width=30, bg='light coral', command=lambda: self.save_posture('bad')).pack(side='right')
+        Button(self.master, text="Quit", height=4, width=20, command=self.cleanup_and_close).pack(side='bottom')
+
     
     def cleanup_and_close(self):
         """
