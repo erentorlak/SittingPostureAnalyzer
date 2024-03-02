@@ -68,7 +68,7 @@ class PostureClassifier:
         return frame
 
 def main():
-    classifier = PostureClassifier('posture_model.pkl')
+    classifier = PostureClassifier('others/posture_model.pkl')
     cap = cv2.VideoCapture(0)
 
     while cap.isOpened():

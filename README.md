@@ -7,8 +7,8 @@ You can use it to monitor your posture while working at a desk, exercising, or p
 If you want to train the model on your own data, you can use the GUI to tag and save instances of good and bad postures. Then, you can train the model using the collected data.
 
 <p align="center">
-  <img src="train_tag_gui.png" alt="Train Tag GUI" width="49%" />
-  <img src="appgif.gif" alt="Posture Classification App" width="49%" />
+  <img src="others/train_tag_gui.png" alt="Train Tag GUI" width="49%" />
+  <img src="others/appgif.gif" alt="Posture Classification App" width="49%" />
 </p>
 
 
