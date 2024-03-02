@@ -486,7 +486,6 @@ class PostureClassifier:
         return np.linalg.norm(np.array(a) - np.array(b))
 
     def extract_features(self, landmarks):
-        # Extract relevant landmarks for feature calculation
         features = []
         for side in ['RIGHT', 'LEFT']:
             ear = landmarks[getattr(mp.solutions.pose.PoseLandmark, f'{side}_EAR').value]
@@ -495,7 +494,6 @@ class PostureClassifier:
             angle = self.calculate_angle([ear.x, ear.y], [eye_outer.x, eye_outer.y], [eye.x, eye.y])
             features.append(angle)
         
-        # Additional features: distance between mid mouth and mid shoulder
         mouth_left = landmarks[mp.solutions.pose.PoseLandmark.MOUTH_LEFT.value]
         mouth_right = landmarks[mp.solutions.pose.PoseLandmark.MOUTH_RIGHT.value]
         mid_mouth = [(mouth_left.x + mouth_right.x) / 2, (mouth_left.y + mouth_right.y) / 2]
@@ -507,7 +505,19 @@ class PostureClassifier:
         diff_mouth_shoulder = self.calculate_distance(mid_mouth, mid_shoulder)
         features.append(diff_mouth_shoulder)
         
+        # Calculate and append the missing features
+        left_eye = landmarks[mp.solutions.pose.PoseLandmark.LEFT_EYE.value]
+        right_eye = landmarks[mp.solutions.pose.PoseLandmark.RIGHT_EYE.value]
+        diff_leye_reye = self.calculate_distance([left_eye.x, left_eye.y], [right_eye.x, right_eye.y])
+        features.append(diff_leye_reye)
+        
+        left_ear = landmarks[mp.solutions.pose.PoseLandmark.LEFT_EAR.value]
+        right_ear = landmarks[mp.solutions.pose.PoseLandmark.RIGHT_EAR.value]
+        diff_leare_reare = self.calculate_distance([left_ear.x, left_ear.y], [right_ear.x, right_ear.y])
+        features.append(diff_leare_reare)
+        
         return np.array([features])
+    
 
     def classify_posture(self, frame):
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -540,3 +550,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# %%
